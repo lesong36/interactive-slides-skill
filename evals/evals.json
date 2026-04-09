@@ -1,0 +1,23 @@
+{
+  "skill_name": "interactive-slides",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "帮我把以下内容做成交互式幻灯片：\n\n## 贝叶斯定理\n\n贝叶斯定理描述了在已知某些先验信息的条件下，如何更新对假设的信念。公式为：\n\nP(H|E) = P(E|H) * P(H) / P(E)\n\n其中：\n- P(H) 是先验概率（Prior）：在观察到证据前对假设的信念\n- P(E|H) 是似然（Likelihood）：假设为真时观察到证据的概率\n- P(H|E) 是后验概率（Posterior）：观察到证据后对假设的更新信念\n- P(E) 是边际似然（Marginal Likelihood）：观察到该证据的总概率\n\n### 经典例子：医学检测\n\n假设某疾病患病率为 1%（先验），检测灵敏度为 99%，特异度为 95%。\n若某人检测结果为阳性，实际患病概率是多少？\n\n计算：\n- P(病) = 0.01\n- P(阳性|病) = 0.99\n- P(阳性|无病) = 0.05\n- P(阳性) = 0.99×0.01 + 0.05×0.99 = 0.0594\n- P(病|阳性) = (0.99×0.01)/0.0594 ≈ 16.7%\n\n### 贝叶斯更新\n\n贝叶斯思维的核心是迭代更新：每次获得新证据，就将后验作为新的先验继续更新。",
+      "expected_output": "一个完整的单文件 HTML 交互式幻灯片，包含：1) 至少4-6页幻灯片；2) 贝叶斯公式用 MathJax 渲染；3) 医学检测例子；4) 进度条和导航按钮；5) 双层渐变边框设计；6) 字体不小于 1em",
+      "files": []
+    },
+    {
+      "id": 1,
+      "prompt": "我有以下课堂笔记，帮我生成一套教学幻灯片slides：\n\n# 因果推断基础\n\n## 相关 vs 因果\n\n「相关不等于因果」（Correlation ≠ Causation）是统计学最重要的警示之一。\n\n例子：冰淇淋销量与溺水事故正相关，但冰淇淋并不导致溺水——两者都受「夏季温度」这个混淆变量影响。\n\n## 潜在结果框架（Potential Outcomes Framework）\n\nRubin 提出的反事实框架：\n- Y(1)：个体接受干预时的潜在结果\n- Y(0)：个体未接受干预时的潜在结果\n- 个体处理效应（ITE）= Y(1) - Y(0)\n- 问题：对同一个体，Y(1) 和 Y(0) 不能同时观测（基本因果难题）\n\n## 平均处理效应（ATE）\n\nATE = E[Y(1) - Y(0)] = E[Y(1)] - E[Y(0)]\n\n随机对照实验（RCT）可以无偏估计 ATE，因为随机化保证了 Y(1),Y(0) ⊥ T。\n\n## 有向无环图（DAG）\n\nDAG 用节点表示变量，有向边表示因果关系：\n- X → Y 表示 X 直接影响 Y\n- 混淆变量（Confounder）：同时影响 X 和 Y 的变量\n- 中介变量（Mediator）：X 通过它影响 Y",
+      "expected_output": "一个完整的单文件 HTML 交互式幻灯片，包含：1) 相关vs因果页；2) 潜在结果框架页（含数学公式）；3) ATE 页；4) DAG 概念页（可含 Mermaid 图）；5) 正确的 MathJax 公式渲染；6) 双层渐变边框设计；7) 导航功能正常",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "请把下面的Python教学内容转成交互式幻灯片：\n\n## 装饰器（Decorator）\n\n装饰器是 Python 中一种高级语法，允许在不修改原函数代码的情况下，给函数添加新功能。\n\n本质上，装饰器是一个接受函数作为参数、返回新函数的高阶函数。\n\n### 基本语法\n\n```python\ndef my_decorator(func):\n    def wrapper(*args, **kwargs):\n        print('函数执行前')\n        result = func(*args, **kwargs)\n        print('函数执行后')\n        return result\n    return wrapper\n\n@my_decorator\ndef say_hello(name):\n    print(f'Hello, {name}!')\n```\n\n`@my_decorator` 等价于 `say_hello = my_decorator(say_hello)`\n\n### 实用场景\n\n1. **计时器**：测量函数执行时间\n2. **日志记录**：记录函数调用\n3. **权限验证**：检查用户权限后再执行\n4. **缓存（Memoization）**：`@functools.lru_cache` 缓存计算结果\n\n### 带参数的装饰器\n\n```python\ndef repeat(n):\n    def decorator(func):\n        def wrapper(*args, **kwargs):\n            for _ in range(n):\n                func(*args, **kwargs)\n        return wrapper\n    return decorator\n\n@repeat(3)\ndef greet():\n    print('Hi!')\n```",
+      "expected_output": "一个完整的单文件 HTML 交互式幻灯片，包含：1) 装饰器概念介绍页；2) 基本语法页（含语法高亮代码块，background: white）；3) 实用场景页；4) 带参数的装饰器页（含代码）；5) 代码块 background 和 color 显式设置；6) 无三重双引号嵌套冲突；7) 导航功能正常",
+      "files": []
+    }
+  ]
+}
