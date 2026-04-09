@@ -9,6 +9,14 @@ description: "生成交互式 HTML 幻灯片演示文稿，适合用于教学、
 
 ---
 
+## 零、执行约束（最高优先级）
+
+- **输出方式：直接输出完整 HTML，不做分析、不列提纲、不分步骤说明。** 收到用户内容后，立即生成单文件 HTML，生成完毕即停止。
+- **禁止追问**：不询问「需要几张？」「需要哪些主题？」等问题，直接按内容判断并生成。
+- **内容压缩原则（关键）**：当同一主题下有多个并列子节，**必须优先用 Tab 切换、步骤展开、可展开详情等页内交互将其合并到同一张幻灯片**，而不是每个子节单独成幕。**注意：这是「折叠」而非「截断」——所有内容仍须完整保留，通过页内交互供读者按需查看，禁止以压缩为由删减原始信息。**
+
+---
+
 ## 一、内容规划原则
 
 ### 幻灯片结构
@@ -385,126 +393,39 @@ const slides = [
 
 ---
 
-## 八、完整骨架
+## 八、输出方式：填充模板
+
+**框架已固定在 `template.html`，模型只需生成两处内容填入占位符，不得重写框架代码。**
+
+### 占位符说明
+
+| 占位符 | 内容 |
+|--------|------|
+| `__TITLE__` | 演示文稿标题，纯文字，如「小学数学·数与代数」 |
+| `__SLIDES__` | slides 数组体，即每张幻灯片的模板字面量，逗号分隔 |
+
+### 输出格式
+
+将 `template.html` 的内容完整复制，仅替换两处占位符：
 
 ```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>主题</title>
-<script>
-window.MathJax = {
-  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
-  startup: { typeset: false }
-};
-</script>
-<script id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Georgia', 'Songti SC', serif;
-  background: linear-gradient(160deg, #f0f2f8, #e8eaf6);
-  min-height: 100vh;
-  display: flex; flex-direction: column; align-items: center;
-  padding: 36px 20px 48px;
-}
-.wrapper { width: 100%; max-width: 920px; }
-button { font-family: inherit; }
-pre { background: white !important; color: #2c3e50 !important;
-      font-family: 'Courier New', monospace; font-size: 1em;
-      line-height: 1.65; border-radius: 10px; padding: 16px 20px;
-      border: 1px solid #e0e0e0; overflow-x: auto; }
-code { background: #f4f4f4 !important; color: #2c3e50 !important;
-       font-family: 'Courier New', monospace; font-size: 0.95em;
-       border-radius: 4px; padding: 1px 5px; }
-.tab { padding:8px 18px; border-radius:20px; border:2px solid #ddd;
-       background:white; cursor:pointer; font-size:1em; color:#888;
-       transition:all 0.2s; font-family:inherit; }
-.tab.active { background:#667eea; color:white; border-color:#667eea; }
-.tab-panel { animation: fadeIn 0.3s ease; }
-.tab-panel.hidden { display:none; }
-.step { animation: fadeIn 0.4s ease; }
-.step.hidden { display:none; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; } }
-</style>
-</head>
-<body>
-<div class="wrapper">
-  <div style="background:linear-gradient(135deg,#667eea,#764ba2);
-              padding:3px;border-radius:20px;
-              box-shadow:0 20px 60px rgba(102,126,234,0.25);">
-    <div id="SLIDE_ID"
-         style="background:white;border-radius:18px;
-                min-height:540px;padding:36px 44px;
-                display:flex;flex-direction:column;gap:22px;">
-    </div>
-  </div>
-  <div style="display:flex;justify-content:space-between;
-              align-items:center;margin-top:20px;padding:0 2px;">
-    <button id="btn-prev" onclick="navigate(-1)"
-      style="padding:11px 30px;border-radius:25px;border:none;
-             background:#ecf0f1;color:#7f8c8d;font-size:1em;cursor:pointer;">
-      ← 上一页</button>
-    <div id="dots" style="display:flex;gap:9px;"></div>
-    <button id="btn-next" onclick="navigate(1)"
-      style="padding:11px 30px;border-radius:25px;border:none;
-             background:linear-gradient(135deg,#667eea,#764ba2);
-             color:white;font-size:1em;cursor:pointer;">
-      下一页 →</button>
-  </div>
-</div>
-<script>
-mermaid.initialize({ startOnLoad: false, theme: 'default' });
-const CONTAINER_ID = 'SLIDE_ID';
+<!-- __TITLE__ 替换为实际标题 -->
+<title>小学数学·数与代数</title>
+
+<!-- __SLIDES__ 替换为幻灯片内容 -->
 const slides = [
-  `...slide 0 HTML...`,
-  `...slide 1 HTML...`,
+  `<div id="pn" ...></div>
+   <!-- 第 0 张内容 -->`,
+  `<div id="pn" ...></div>
+   <!-- 第 1 张内容 -->`,
 ];
-let current = 0;
-
-function buildDots() {
-  const el = document.getElementById('dots');
-  el.innerHTML = '';
-  slides.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.style.cssText = 'width:10px;height:10px;border-radius:50%;cursor:pointer;transition:all 0.25s;';
-    d.style.background = i === current ? '#667eea' : '#ccc';
-    d.style.transform = i === current ? 'scale(1.4)' : 'scale(1)';
-    d.onclick = () => showSlide(i);
-    el.appendChild(d);
-  });
-}
-
-function showSlide(idx) {
-  current = idx;
-  const c = document.getElementById(CONTAINER_ID);
-  c.innerHTML = slides[idx];
-  const pn = c.querySelector('#pn');
-  if (pn) pn.textContent = (idx + 1) + ' / ' + slides.length;
-  document.getElementById('btn-prev').style.opacity = idx === 0 ? '0.3' : '1';
-  document.getElementById('btn-next').style.opacity = idx === slides.length-1 ? '0.3' : '1';
-  document.getElementById('btn-prev').disabled = idx === 0;
-  document.getElementById('btn-next').disabled = idx === slides.length-1;
-  buildDots();
-  if (window.MathJax?.typesetPromise) MathJax.typesetPromise([c]).catch(console.warn);
-  const mEls = c.querySelectorAll('.mermaid');
-  if (mEls.length) { mEls.forEach(e => e.removeAttribute('data-processed')); mermaid.init(undefined, mEls); }
-}
-
-function navigate(dir) {
-  const n = current + dir;
-  if (n >= 0 && n < slides.length) showSlide(n);
-}
-
-window.addEventListener('load', () => {
-  if (window.MathJax?.startup?.promise) MathJax.startup.promise.then(() => showSlide(0));
-  else showSlide(0);
-});
-</script>
-</body>
-</html>
 ```
+
+### 每张幻灯片必须包含
+
+```html
+<div id="pn" style="text-align:right;color:#aaa;font-size:1em;"></div>
+<!-- 幻灯片正文内容 -->
+```
+
+`#pn` 由框架自动填入页码，保留即可。正文内容参照前述各节规范编写。
