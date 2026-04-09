@@ -18,6 +18,18 @@
       "prompt": "请把下面的Python教学内容转成交互式幻灯片：\n\n## 装饰器（Decorator）\n\n装饰器是 Python 中一种高级语法，允许在不修改原函数代码的情况下，给函数添加新功能。\n\n本质上，装饰器是一个接受函数作为参数、返回新函数的高阶函数。\n\n### 基本语法\n\n```python\ndef my_decorator(func):\n    def wrapper(*args, **kwargs):\n        print('函数执行前')\n        result = func(*args, **kwargs)\n        print('函数执行后')\n        return result\n    return wrapper\n\n@my_decorator\ndef say_hello(name):\n    print(f'Hello, {name}!')\n```\n\n`@my_decorator` 等价于 `say_hello = my_decorator(say_hello)`\n\n### 实用场景\n\n1. **计时器**：测量函数执行时间\n2. **日志记录**：记录函数调用\n3. **权限验证**：检查用户权限后再执行\n4. **缓存（Memoization）**：`@functools.lru_cache` 缓存计算结果\n\n### 带参数的装饰器\n\n```python\ndef repeat(n):\n    def decorator(func):\n        def wrapper(*args, **kwargs):\n            for _ in range(n):\n                func(*args, **kwargs)\n        return wrapper\n    return decorator\n\n@repeat(3)\ndef greet():\n    print('Hi!')\n```",
       "expected_output": "一个完整的单文件 HTML 交互式幻灯片，包含：1) 装饰器概念介绍页；2) 基本语法页（含语法高亮代码块，background: white）；3) 实用场景页；4) 带参数的装饰器页（含代码）；5) 代码块 background 和 color 显式设置；6) 无三重双引号嵌套冲突；7) 导航功能正常",
       "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "请把下面这道小学数学题做成交互式讲题幻灯片，给孩子看，要像老师带着孩子一步一步想：\n\n两筐苹果共50个，大筐比小筐多10个。求大筐和小筐各有多少个苹果？\n\n要求：使用 Python + IPython.display.HTML 的形式输出，做成高级漫画风，适合中小学生阅读。",
+      "expected_output": "一个可直接在 Jupyter 中运行的 HTML 交互式讲题内容，包含：1) 明显的中小学生引导式苏格拉底风格；2) 每一幕都重复原题；3) 每个知识点单独成幕，不把全部内容挤在一页；4) 顶部有可点击进度点；5) 版心 max-width 800px、单页避免滚动；6) 需要时使用线段图或数形结合；7) 不使用 document.currentScript；8) 容器唯一 ID 或 uid 以字母开头；9) 若出现计算过程，数位对齐由 HTML/CSS 保证；10) 不引入题目之外的其他 cell 内容",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "请把下面内容做成给小学生看的交互式线段图讲题 slides，要有漫画感、字少一点、像老师在陪着想，不要做成普通课件：\n\n男生20人，女生比男生多10人，女生有多少人？",
+      "expected_output": "输出应明显接近儿童漫画讲题板，而不是信息型 PPT，至少满足：1) 顶部有居中的胶囊标题和 dots；2) 中间是单一主舞台卡，不采用复杂双栏知识布局；3) 每页最多 2-3 个主要元素；4) 用短句对话气泡或提示条代替大段说明；5) 图示优先于文字，能看到清晰线段图；6) 首页直接进入题目或小问题，不先做知识总览；7) 不应出现大量 summary-grid、tag-row、hero-sub 这类成人课件式骨架；8) 文字克制，孩子不需要先读很多字才能看图",
+      "files": []
     }
   ]
 }

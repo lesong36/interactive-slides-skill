@@ -1,431 +1,430 @@
 ---
 name: interactive-slides
-description: "生成交互式 HTML 幻灯片演示文稿，适合用于教学、学术讲解、课程内容展示。当用户提供学习材料、笔记、课程内容、知识点，并要求生成幻灯片、演示文稿、slides、交互式讲义时，必须使用此技能。触发关键词包括：幻灯片、slides、演示文稿、交互式幻灯片、课件、教学课件、interactive slides、slideshow。即使用户只说「帮我做成幻灯片」或「把这个内容做成slides」也应触发此技能。"
+description: "生成交互式 HTML 幻灯片演示文稿，适合用于教学、学术讲解、课程内容展示，尤其适合将课堂内容改写为分幕式、可交互、适配不同年龄层的学习材料。当用户提供学习材料、笔记、课程内容、知识点，并要求生成幻灯片、演示文稿、slides、交互式讲义时，必须使用此技能。触发关键词包括：幻灯片、slides、演示文稿、交互式幻灯片、课件、教学课件、interactive slides、slideshow。即使用户只说「帮我做成幻灯片」或「把这个内容做成slides」也应触发此技能。"
 ---
 
 # Interactive Slides Skill
 
-当用户提供上下文内容，生成一套可在浏览器中交互浏览的 HTML 幻灯片。输出为单文件 HTML，双击即可在浏览器中打开，无需服务器。
+当用户提供课堂材料、题目解析、讲义、知识点或笔记时，生成一套可在浏览器或 Notebook 中交互浏览的 HTML 幻灯片。输出应优先是单文件 HTML；若用户上下文明确是 Jupyter / `IPython.display.HTML` 包装场景，则生成可直接嵌入该 cell 的 HTML/CSS/JS 内容。
 
 ---
 
 ## 零、执行约束（最高优先级）
 
-- **输出方式：直接输出完整 HTML，不做分析、不列提纲、不分步骤说明。** 收到用户内容后，立即生成单文件 HTML，生成完毕即停止。
-- **禁止追问**：不询问「需要几张？」「需要哪些主题？」等问题，直接按内容判断并生成。
-- **内容压缩原则（关键）**：当同一主题下有多个并列子节，**必须优先用 Tab 切换、步骤展开、可展开详情等页内交互将其合并到同一张幻灯片**，而不是每个子节单独成幕。**注意：这是「折叠」而非「截断」——所有内容仍须完整保留，通过页内交互供读者按需查看，禁止以压缩为由删减原始信息。**
+- **输出方式**：直接输出完整可运行代码，不做分析、不列提纲、不分步骤说明。
+- **禁止追问**：除非用户明确要求你先规划，否则不要追问页数、风格等。
+- **只改写当前内容**：**必须严格以当前输入内容为边界**，不得引入其他 cell、其他上下文、其他教材中的知识点、题目、例子或术语。
+- **宁可多页，不可拥挤**：当内容偏多时，必须拆成更多幕；**禁止**为了压缩页数，把多个知识点硬塞进一页。
+- **每个知识点一幕**：一个定义、一条规则、一步推导、一个图示、一个易错点，原则上各占一幕。
+- **每幕都保留题干**：只要是题目讲解型内容，**每一幕都必须重复显示原题**，让读者始终知道当前在解哪道题。
+- **受众自适应**：默认根据语境判断受众；若明显面向中小学生，必须切换为**引导式苏格拉底教学风格**。
 
 ---
 
-## 一、内容规划原则
+## 一、双客户模式
 
-### 幻灯片结构
+### A. 中小学生模式
 
-每个核心概念独立一幕，按以下顺序组织：
+适用信号：
+- 用户提到小学生、中学生、孩子、课堂、培优、启蒙、讲题、漫画风、趣味教学
+- 内容本身是基础学科题目、分步讲解、练习讲评
 
-1. **概念引入** — 一句话定义 + 中英文术语对照
-2. **直觉建立** — 生活类比（必须具体，不可用「类似于」这种模糊表述）
-3. **结构图示** — 流程图、关系图、步骤图（见「图示规范」）
-4. **公式/推导** — 若有数学内容，用 MathJax 渲染
-5. **例子/代码** — 具体数值例子或代码示例（单独一幕）
+必须满足：
+- 语言是**对话式、温和、带引导感**，像老师一问一答地带着想
+- 文案**不能太多**，避免阅读压力；也**不能太少**，避免干巴巴
+- 优先使用「你发现了吗？」「如果先把这一步想清楚呢？」这类苏格拉底引导句
+- 每页只放 2-3 个主要元素，例如：1 个图示 + 1-2 个对话气泡
+- 优先使用线段图、份数图、竖式、分组图等数形结合方式
+- 视觉风格是**高级漫画风**，但仍要克制、护眼、整洁
+- **优先像“漫画分镜”而不是“信息型课件”**：每页像一张讲题卡，而不是半页讲解半页摘要
 
-### 信息密度平衡
+### B. 通用/成人模式
 
-目标：**每张幻灯片让读者在 30 秒内读完，但读完后有真实收获。**
+适用信号：
+- 学术讲解、技术教学、笔记整理、培训内容、课程总结
 
-- 定义：2-4 句，讲清楚「是什么」和「为什么重要」
-- 类比：1-3 句，必须落到具体场景
-- 图示：用视觉代替文字，不要既有图又有大段文字描述图
-- 公式推导：每步单独一幕，每步有一句话解释「这步在做什么」
-- 禁止：纯文字列表超过 5 条、段落超过 5 行
+必须满足：
+- 语言清晰、优雅、克制
+- 信息密度可以略高于儿童模式，但仍保持单页聚焦
+- 交互用于分层展开，不用于堆砌信息
 
 ---
 
-## 二、页内交互规范（核心要求）
+## 二、内容改写原则
 
-**「交互式」不只是翻页。** 每张幻灯片至少使用以下一种页内交互模式：
+### 1. 严格边界
 
-### 模式 A：步骤展开（Step Reveal）
+- 只处理用户当前提供的文本、题目、代码或本 cell 中已有内容
+- 不补充用户未给出的定义、公式、延伸题、背景知识
+- 不将其他 cell 的题目、示例、规则、结论混入当前输出
 
-适用于：推导过程、算法步骤、逻辑链
+### 2. 分幕原则
 
-```html
-<!-- 初始只显示第一步，点击「下一步」逐步展开 -->
-<div id="steps">
-  <div class="step active">步骤 1 内容</div>
-  <div class="step hidden">步骤 2 内容</div>
-  <div class="step hidden">步骤 3 内容</div>
-</div>
-<button onclick="revealNext()">下一步 →</button>
+- 一个知识点一幕，不要一页展示所有内容
+- 情境引入页只放场景图和问题；规则说明拆到下一页
+- 复杂图示单独占一页，不与大段文字混排
+- 如果一个推导超过 2 步，就拆成多幕，而不是一页塞完
+- **一幕只做一个认知动作**：例如“看线索”“看图”“说出多出来的部分”“列式”“验证”，不要一幕里同时做三件事
 
-<script>
-let stepIdx = 0;
-function revealNext() {
-  const steps = document.querySelectorAll('#steps .step');
-  stepIdx = Math.min(stepIdx + 1, steps.length - 1);
-  steps[stepIdx].classList.remove('hidden');
-  steps[stepIdx].style.animation = 'fadeIn 0.4s ease';
-  if (stepIdx === steps.length - 1) document.querySelector('button').disabled = true;
-}
-</script>
-```
+### 3. 儿童讲题页的推荐顺序
 
-### 模式 B：Tab 切换（Definition / Example / Formula）
+1. 原题 + 情境引入
+2. 观察线索
+3. 图示建立
+4. 第一步运算
+5. 第二步运算
+6. 回代验证
+7. 总结口诀或辨型
 
-适用于：概念讲解页，让读者按需深入
+---
 
-```html
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('def')">📖 定义</button>
-  <button class="tab" onclick="switchTab('eg')">💡 例子</button>
-  <button class="tab" onclick="switchTab('formula')">📐 公式</button>
-</div>
-<div id="tab-def" class="tab-panel">定义内容</div>
-<div id="tab-eg" class="tab-panel hidden">例子内容</div>
-<div id="tab-formula" class="tab-panel hidden">公式内容</div>
+## 三、单页信息密度限制
 
-<script>
-function switchTab(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('hidden'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.remove('hidden');
-  event.target.classList.add('active');
-}
-</script>
-```
+每页内容应控制在**视口高度约 600px 内**，避免滚动。
 
-### 模式 C：点击揭示（Click to Reveal）
+硬性要求：
+- 每页最多 2-3 个主要元素
+- 元素之间必须有垂直留白，避免紧贴
+- 不要在同一页同时放：大段文字 + 复杂图 + 复杂公式 + 多个按钮
+- 若内容过多，优先拆页，**不要缩小字体** 解决
+- **儿童模式每页可见正文建议不超过 45 个汉字 x 3 小块**
+- **单个气泡建议 1-2 句，优先短句**
+- **禁止出现连续 4 行以上的说明性段落**
 
-适用于：「你认为答案是什么？」→ 点击揭示
+推荐拆分页式：
+- 1 个主图 + 1 个对话气泡
+- 1 个原题卡片 + 1 个步骤卡片
+- 1 个竖式 + 1 个结论卡片
+- 1 个题干条 + 1 个图框 + 1 个底部提醒
 
-```html
-<div style="cursor:pointer; background:#f5f5f5; border-radius:10px; padding:16px;"
-     onclick="this.innerHTML='<strong>真实答案：...</strong>'; this.style.background='#eafaf1'">
-  🤔 点击揭示答案
-</div>
-```
+---
 
-### 模式 D：可展开详情（Expandable Detail）
+## 四、题目讲解专用规则
 
-适用于：核心内容 + 可选深度内容
+当输入内容是数学题、应用题、例题讲解时，必须额外遵守：
+
+- **每一幕都显示原题**
+- 每一步都说明「这一步在题目里对应哪条线索」
+- 如果适合，用线段图、份数图、集合圈图、配对图等数形结合方法
+- 加减乘除竖式必须用 **HTML/CSS 排版** 保证数位对齐，不能用普通文本随便模拟
+- 若一页出现公式或算式，旁边只配一个小结论，不再放大段解释
+- **优先先画图、后说结论、最后给算式**
+- **儿童模式下不要先讲抽象规则，再给例子；应先给例子，再从图里“长出”规则**
+
+竖式示意：
 
 ```html
-<div class="card">
-  <div>核心内容（始终可见）</div>
-  <div id="detail" style="display:none; margin-top:12px; color:#555;">
-    深度解释（点击展开）
-  </div>
-  <button onclick="toggle('detail')" style="margin-top:8px; font-size:0.95em;">
-    ▶ 查看详细解释
-  </button>
-</div>
-<script>
-function toggle(id) {
-  const el = document.getElementById(id);
-  const btn = el.nextElementSibling;
-  if (el.style.display === 'none') {
-    el.style.display = 'block'; btn.textContent = '▲ 收起';
-  } else {
-    el.style.display = 'none'; btn.textContent = '▶ 查看详细解释';
-  }
-}
-</script>
-```
-
-### 模式 E：公式高亮标注（Formula Tooltip）
-
-适用于：有多个变量的公式，鼠标悬浮查看含义
-
-```html
-<div style="text-align:center; font-size:1.3em; padding:20px;">
-  \[ P(H \mid E) = \frac{
-    \htmlClass{hl-likelihood}{P(E \mid H)} \cdot \htmlClass{hl-prior}{P(H)}
-  }{\htmlClass{hl-evidence}{P(E)}} \]
-</div>
-<!-- 图例说明 -->
-<div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
-  <span style="background:#ebf5fb; padding:4px 12px; border-radius:20px; font-size:1em;">
-    <strong style="color:#1a5276;">P(E|H)</strong> 似然
-  </span>
-  <span style="background:#fef9e7; padding:4px 12px; border-radius:20px; font-size:1em;">
-    <strong style="color:#9a7b0a;">P(H)</strong> 先验
-  </span>
-  <span style="background:#eafaf1; padding:4px 12px; border-radius:20px; font-size:1em;">
-    <strong style="color:#1e8449;">P(E)</strong> 归一化项
-  </span>
+<div style="display:inline-grid; grid-template-columns:repeat(4, 1.2em); gap:2px; font-family:'Consolas','Menlo',monospace; font-size:1.15em;">
+  <span></span><span>3</span><span>2</span><span></span>
+  <span>+</span><span>1</span><span>8</span><span></span>
+  <span style="grid-column:1 / -1; border-top:2px solid #5d4e37; height:0;"></span>
+  <span></span><span>5</span><span>0</span><span></span>
 </div>
 ```
 
 ---
 
-## 三、图示规范（必须使用，不可只用文字）
+## 五、页内交互规范
 
-### 何时必须用图
+交互的目的不是压缩，而是**帮助聚焦**。每页至少使用一种轻交互：
 
-- 流程/步骤关系 → **Mermaid flowchart**
-- 因果/依赖关系 → **Mermaid graph**
-- 对比/分类 → **HTML CSS 网格对比表**
-- 数据分布/比例 → **HTML/CSS 可视化条形图**
-- 层级嵌套结构 → **HTML 缩进卡片树**
+- 步骤切换：用于一页内 1-2 个小步骤
+- 点击揭示：用于让学生先想再看
+- 进度点跳转：用于整套内容导航
+- 轻量 Tab：只适合成人模式；儿童模式中谨慎使用，避免同页信息太多
 
-### Mermaid 流程图（必须引入）
+儿童模式优先：
+- 对话气泡
+- 点击猜想
+- 下一步揭示
+- 进度点跳转
+- 单题选择题
+- 分镜式上一幕 / 下一幕
 
-```html
-<head>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
-</head>
-```
+成人模式可用：
+- Tab 切换
+- 展开详情
+- 公式高亮说明
 
-在 `showSlide()` 末尾重新初始化：
-```js
-const mEls = container.querySelectorAll('.mermaid');
-if (mEls.length) {
-  // 清除已渲染标记，强制重新渲染
-  mEls.forEach(el => { el.removeAttribute('data-processed'); });
-  mermaid.init(undefined, mEls);
-}
-```
-
-用法示例（因果图）：
-```html
-<div class="mermaid">
-graph LR
-  A[原因 X] -->|影响| B[结果 Y]
-  C[混淆变量] --> A
-  C --> B
-  style C fill:#fef9e7,stroke:#9a7b0a
-</div>
-```
-
-### HTML/CSS 步骤流程图
-
-不依赖 Mermaid，直接用 HTML 绘制，适合简单线性流程：
-
-```html
-<div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; justify-content:center;">
-  <div style="background:#ebf5fb; border:2px solid #1a5276; border-radius:10px;
-              padding:10px 18px; font-size:1.05em; color:#1a5276; font-weight:600;">
-    步骤 1
-  </div>
-  <div style="font-size:1.4em; color:#aaa;">→</div>
-  <div style="background:#fef9e7; border:2px solid #9a7b0a; border-radius:10px;
-              padding:10px 18px; font-size:1.05em; color:#9a7b0a; font-weight:600;">
-    步骤 2
-  </div>
-  <div style="font-size:1.4em; color:#aaa;">→</div>
-  <div style="background:#eafaf1; border:2px solid #1e8449; border-radius:10px;
-              padding:10px 18px; font-size:1.05em; color:#1e8449; font-weight:600;">
-    步骤 3
-  </div>
-</div>
-```
-
-### HTML/CSS 对比表（优于纯 Markdown 表格）
-
-```html
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
-  <div style="background:#fdedec; border-radius:12px; padding:18px;">
-    <div style="font-weight:700; color:#c0392b; margin-bottom:8px;">❌ 相关关系</div>
-    <div style="font-size:1.1em; line-height:1.75; color:#2c3e50;">内容...</div>
-  </div>
-  <div style="background:#eafaf1; border-radius:12px; padding:18px;">
-    <div style="font-weight:700; color:#1e8449; margin-bottom:8px;">✅ 因果关系</div>
-    <div style="font-size:1.1em; line-height:1.75; color:#2c3e50;">内容...</div>
-  </div>
-</div>
-```
+儿童模式禁止默认使用：
+- 大段 Tab 面板
+- 双栏信息对照表
+- 首页知识总览
+- 一页多知识点目录
 
 ---
 
-## 四、视觉设计规范
+## 六、视觉规范
 
-### 字体与色彩
+### 1. 整体风格
+
+- 风格：高级漫画风、清晰、克制、有故事感
+- 配色：**莫兰迪色系 + 高对比重点色**
+- 版心：`max-width: 800px`
+- 字体大小：适中、护眼，正文不小于 `1em`
+- 页面观感：柔和底色 + 清晰边框 + 重点色强调，不要花哨刺眼
+- 外观目标：更像**故事卡 / 漫画讲题板 / 儿童杂志栏目**，不要像企业培训 PPT
+
+### 1.1 客户风格关键特征
+
+当用户给出类似参考图时，优先匹配以下结构：
+
+- 顶部居中的**胶囊标题**
+- 标题下方一排**圆点进度**
+- 中间一张**大舞台卡片**
+- 卡片内部先放**题干条 / 对话条**
+- 再放一个**虚线或留白图框**承载线段图
+- 底部只保留**一个主按钮**或一对简洁翻页按钮
+- 外层有**粗描边、柔阴影、圆角大边框**
+- 文本像贴纸、气泡、标题条，不像普通段落
+
+### 1.2 强制版式偏好
+
+儿童模式优先采用以下版式层次：
+
+1. 外层大画框
+2. 标题胶囊
+3. dots
+4. 主舞台卡
+5. 题干条
+6. 对话条或提示条
+7. 图框 / 算式框
+8. 翻页按钮
+
+不要优先采用以下版式：
+
+- 传统 `hero + side panel`
+- 双栏正文说明
+- 顶部长标题 + 右上角页码的知识课件布局
+- 标签云、摘要卡、总结表并列
+
+### 2. 推荐配色
 
 ```css
-font-family: 'Georgia', 'Songti SC', serif;
-
-/* 语义化配色 */
-蓝  #1a5276 / #ebf5fb  →  定义、理论
-金  #9a7b0a / #fef9e7  →  类比、直觉
-绿  #1e8449 / #eafaf1  →  结论、正确
-紫  #8e44ad / #f5eef8  →  公式、数学
-红  #c0392b / #fdedec  →  警告、误区
-主渐变  #667eea → #764ba2
+background: linear-gradient(135deg, #e7ddd2 0%, #d8cabc 100%);
+primary-text: #4f4338;
+soft-blue: #c7d6df;
+soft-green: #cfd8c6;
+soft-rose: #d8c6cf;
+soft-gold: #d9bf9e;
+accent: #7b5c45;
+accent-strong: #b45f3c;
+panel: #f7f2eb;
+line: #5f5145;
 ```
 
-### 双层容器（必须）
+### 3. 布局要求
+
+- 外层容器最大宽度 `800px`
+- 建议内层最小高度 `560px` 左右，但不要造成内容溢出
+- 卡片之间留出明显呼吸空间
+- 标题、图示、对话、按钮不要上下挤压
+- 儿童模式下，主舞台卡内建议只出现一块主内容区，不要切成复杂网格
+
+### 4. 文字风格约束
+
+- 句子尽量短
+- 多用问句、提醒句、发现句
+- 少用定义腔、总结腔、教程腔
+- 少用“本节主题”“核心思路”“常见应用题类型”这类成人化课程文案
+
+优先写法：
+- “你先看这里”
+- “哪一段是多出来的？”
+- “如果把这段拿走，会怎样？”
+- “现在就剩两份一样多了”
+
+避免写法：
+- “本节主题是……”
+- “它的核心想法是……”
+- “可以按以下顺序观察……”
+- “我们要认识三类常见应用题思路……”
+
+---
+
+## 七、图示规范
+
+必须优先使用图示表达，不可只堆文字。
+
+适用建议：
+- 关系、流程：Mermaid 或 HTML/CSS 流程图
+- 数学应用题：线段图、份数图、对比图
+- 对比概念：双栏卡片
+- 计算过程：竖式或步骤框
+
+儿童模式优先：
+- 线段图
+- 份数图
+- 简化场景图
+- 角色对话气泡
+- 虚线边框图框
+- 标签式数量标注
+- 分步高亮的色块
+
+注意：
+- 复杂场景必须简化，或单独占一页
+- 图示与长段文字不要混排
+- 图优先占主要视觉面积，文字退居辅助
+- 一张图里只突出一个关系，例如“多 8”“共 54”“3 倍”
+
+---
+
+## 八、导航规范
+
+- 顶部必须有**进度点 dots**
+- 进度点可点击跳转到对应页
+- 首页上一页禁用，末页下一页禁用
+- 建议显示页码 `N / Total`
+
+推荐行为：
+- 当前页 dot 放大并高亮
+- 已访问页与未访问页有视觉区分
+- 儿童模式中，页码可弱化，dots 和按钮是主导航
+
+---
+
+## 九、Jupyter / HTML 嵌入安全规范
+
+如果输出是 Python 包装 `display(HTML(...))` 或类似 notebook 代码，必须遵守：
+
+- **禁止使用 `document.currentScript`**
+- 给最外层容器一个**唯一 ID**
+- 在 `<script>` 中通过 `document.getElementById('...')` 获取该容器
+- 所有 DOM 查询都基于这个容器进行
+
+正确模式：
 
 ```html
-<div style="background:linear-gradient(135deg,#667eea,#764ba2);
-            padding:3px; border-radius:20px;
-            box-shadow:0 20px 60px rgba(102,126,234,0.25);">
-  <div style="background:white; border-radius:18px;
-              min-height:540px; padding:36px 44px;
-              display:flex; flex-direction:column; gap:22px;">
-    <!-- 内容 -->
+<div id="demo-container-unique"></div>
+<script>
+(function () {
+  var container = document.getElementById('demo-container-unique');
+  var dots = container.querySelectorAll('.dot');
+})();
+</script>
+```
+
+错误模式：
+
+```html
+<script>
+const root = document.currentScript.previousElementSibling;
+</script>
+```
+
+---
+
+## 十、唯一 ID 规范
+
+- `uid` **必须以字母开头**
+- 不要使用纯数字开头的 ID、class 或 CSS 选择器前缀
+- 推荐：`'f' + Math.random().toString(36).slice(2, 10)`
+- Python 中推荐：`f"intro_{uuid.uuid4().hex[:8]}"`
+
+原因：
+- CSS 选择器不允许以数字开头的标识符按普通方式安全工作
+- 以字母开头可从根源避免样式与脚本静默失效
+
+---
+
+## 十一、MathJax 与 Mermaid
+
+若内容中有公式，必须正确初始化 MathJax；若有 Mermaid，也必须在切页后重新渲染。
+
+MathJax 基本要求：
+- 先配置 `window.MathJax`
+- 再加载脚本
+- 切页后对当前容器执行 `MathJax.typesetPromise([container])`
+- 不要在脚本底部直接裸调首屏渲染
+
+Mermaid 基本要求：
+- 切页后重新扫描当前容器内 `.mermaid`
+- 渲染前移除 `data-processed`
+
+---
+
+## 十二、防冲突规范
+
+- `slides` 数组用模板字面量
+- `<pre><code>` 中不要再放反引号围栏
+- 如果输出 Python 包装代码，顶层说明注释使用 `''' ... '''`，避免三重双引号嵌套冲突
+- 所有事件函数、局部选择器、ID 前缀都应带上当前 `uid`
+
+---
+
+## 十三、输出模板要求
+
+如果已有固定 `template.html` 框架，则只替换标题与 `slides` 数组，不重写宿主框架。
+
+每张幻灯片至少应包含：
+
+```html
+<div class="problem-card">原题：...</div>
+<div class="slide-body">当前这一幕的唯一重点</div>
+```
+
+题目讲解型内容中，`problem-card` 必须每页重复出现。
+
+### 儿童模式推荐骨架
+
+优先生成接近下面气质的结构，而不是自由发挥成普通课件：
+
+```html
+<div class="outer-frame">
+  <div class="title-pill">📏 线段图：数学的“翻译机”</div>
+  <div class="dots"></div>
+
+  <div class="stage-card">
+    <div class="problem-strip">📝 例题：......</div>
+    <div class="dialog-strip">“先看图，再说哪一段多出来了。”</div>
+    <div class="diagram-frame">
+      <!-- 线段图 / 份数图 / 竖式 -->
+    </div>
+    <div class="bottom-hint">✨ 这一页只记一个小发现</div>
+  </div>
+
+  <div class="nav-row">
+    <button>⬅ 上一步</button>
+    <button>下一步 ➡</button>
   </div>
 </div>
 ```
 
-### 排版
+### 儿童模式硬性禁令
 
-| 元素 | 规格 |
-|------|------|
-| 大标题 | 1.55em, bold, #1a5276 |
-| 卡片标题 | 1em, bold, 对应语义色 |
-| 卡片正文 | 1.15em, line-height 1.8, #2c3e50 |
-| 次要说明 | 1em, #666 |
-| 最小字号 | 1em（不得更小） |
+以下内容在儿童模式中默认禁止，除非用户明确要求：
 
-### Tab 样式
+- 首页出现 3 个以上知识点总览
+- 大标题下方接长段副标题
+- 讲解页使用双栏知识说明
+- 总结页出现密集 bullet 列表
+- 同页同时出现“定义 + 方法 + 公式 + 例题 + 小测”
+- 使用“hero-title / hero-sub / tag-row / summary-grid / choice-grid”这一类偏成人课件的结构作为主骨架
 
-```css
-.tab {
-  padding: 8px 18px; border-radius: 20px; border: 2px solid #ddd;
-  background: white; cursor: pointer; font-size: 1em;
-  color: #888; transition: all 0.2s; font-family: inherit;
-}
-.tab.active {
-  background: #667eea; color: white; border-color: #667eea;
-}
-.tab-panel { animation: fadeIn 0.3s ease; }
-.tab-panel.hidden { display: none; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; } }
-```
+### 反例识别
+
+如果生成结果出现以下特征，说明不够优雅，应重写：
+
+- 看起来像培训 PPT，而不是儿童漫画讲题页
+- 第一页在“介绍要学什么”，而不是直接进入一个小问题
+- 大段解释先于图示出现
+- 同一页上有太多文字块、标签块、总结块
+- 孩子需要先读很多字，才能看到图
+- 页面虽然不滚动，但视觉仍然拥挤
 
 ---
 
-## 五、MathJax 正确初始化
+## 十四、质量检查清单
 
-**必须严格按此顺序，否则公式无法渲染。**
+生成前自行检查：
 
-### head 中（先配置再加载）
-
-```html
-<script>
-window.MathJax = {
-  tex: {
-    inlineMath: [['\\(','\\)']],
-    displayMath: [['\\[','\\]']]
-  },
-  startup: { typeset: false }   /* 禁用自动排版，手动控制 */
-};
-</script>
-<script id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-```
-
-### showSlide() 中
-
-```js
-function showSlide(idx) {
-  current = idx;
-  const container = document.getElementById(CONTAINER_ID);
-  container.innerHTML = slides[idx];
-  // ... 更新页码、dots、按钮 ...
-
-  // 公式渲染
-  if (window.MathJax && MathJax.typesetPromise) {
-    MathJax.typesetPromise([container]).catch(err => console.warn(err));
-  }
-  // Mermaid 图表渲染
-  const mEls = container.querySelectorAll('.mermaid');
-  if (mEls.length) {
-    mEls.forEach(el => el.removeAttribute('data-processed'));
-    mermaid.init(undefined, mEls);
-  }
-}
-```
-
-### 初始化第一页（等待 MathJax 加载完成）
-
-```js
-window.addEventListener('load', function () {
-  if (window.MathJax?.startup?.promise) {
-    MathJax.startup.promise.then(() => showSlide(0));
-  } else {
-    showSlide(0);
-  }
-});
-```
-
-❌ **禁止**在脚本底部直接调用 `showSlide(0)`，MathJax 此时尚未加载。
-
----
-
-## 六、导航规范
-
-```js
-// dots 构建
-function buildDots() {
-  const el = document.getElementById('dots');
-  el.innerHTML = '';
-  slides.forEach((_, i) => {
-    const d = document.createElement('div');
-    d.style.cssText = 'width:10px;height:10px;border-radius:50%;cursor:pointer;transition:all 0.25s;';
-    d.style.background = i === current ? '#667eea' : '#ccc';
-    d.style.transform = i === current ? 'scale(1.4)' : 'scale(1)';
-    d.onclick = () => showSlide(i);
-    el.appendChild(d);
-  });
-}
-```
-
-- 首页「上一页」禁用（opacity 0.3）
-- 末页「下一页」禁用（opacity 0.3）
-- 右上角页码「N / Total」，颜色 #aaa
-
----
-
-## 七、防冲突规范
-
-slides 数组用模板字面量（反引号）：
-```js
-const slides = [
-  `<div>第一页</div>`,
-  `<div>第二页</div>`
-];
-```
-
-- `<pre><code>` 中**禁止**使用反引号
-- Python 代码中的文档注释用 `'''` 替代 `"""`
-- 容器 ID：`'slide_' + Math.random().toString(36).slice(2, 10)`
-
----
-
-## 八、输出方式：填充模板
-
-**框架已固定在 `template.html`，模型只需生成两处内容填入占位符，不得重写框架代码。**
-
-### 占位符说明
-
-| 占位符 | 内容 |
-|--------|------|
-| `__TITLE__` | 演示文稿标题，纯文字，如「小学数学·数与代数」 |
-| `__SLIDES__` | slides 数组体，即每张幻灯片的模板字面量，逗号分隔 |
-
-### 输出格式
-
-将 `template.html` 的内容完整复制，仅替换两处占位符：
-
-```html
-<!-- __TITLE__ 替换为实际标题 -->
-<title>小学数学·数与代数</title>
-
-<!-- __SLIDES__ 替换为幻灯片内容 -->
-const slides = [
-  `<div id="pn" ...></div>
-   <!-- 第 0 张内容 -->`,
-  `<div id="pn" ...></div>
-   <!-- 第 1 张内容 -->`,
-];
-```
-
-### 每张幻灯片必须包含
-
-```html
-<div id="pn" style="text-align:right;color:#aaa;font-size:1em;"></div>
-<!-- 幻灯片正文内容 -->
-```
-
-`#pn` 由框架自动填入页码，保留即可。正文内容参照前述各节规范编写。
+- 是否区分了儿童模式与通用模式
+- 是否严格只使用当前输入内容
+- 是否每个知识点单独成幕
+- 是否每页都在 600px 左右视口内可完整阅读
+- 是否每页只有 2-3 个主要元素
+- 是否每页都保留原题（题目讲解场景）
+- 是否使用了可点击进度点
+- 是否避免 `document.currentScript`
+- 是否保证 `uid` 以字母开头
+- 是否对竖式做了 CSS 数位对齐
